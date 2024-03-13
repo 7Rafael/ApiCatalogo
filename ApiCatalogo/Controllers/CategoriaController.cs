@@ -20,7 +20,7 @@ public class CategoriaController : ControllerBase
     [HttpGet("Categorias")]
     public ActionResult<IEnumerable<Categoria>> GetAll()
     {
-        var categorias = _context.Categorias.ToList();
+        var categorias = _context.Categorias.Take(10).AsNoTracking().ToList();
         if (categorias is null)
         {
             return NotFound();
@@ -31,7 +31,7 @@ public class CategoriaController : ControllerBase
     [HttpGet("{id:int}", Name = "ObterCategoria")]
     public ActionResult<Categoria> GetById(int id)
     {
-        var categorias = _context.Categorias.FirstOrDefault(c => c.CategoriaId == id);
+        var categorias = _context.Categorias.AsNoTracking().FirstOrDefault(c => c.CategoriaId == id);
         if (categorias is null)
         {
             return NotFound();
@@ -43,7 +43,7 @@ public class CategoriaController : ControllerBase
     public ActionResult<IEnumerable<Categoria>> GetAllProdutosECategorias()
     {
 
-        return _context.Categorias.Include(p=> p.Produtos).ToList();
+        return _context.Categorias.Include(p => p.Produtos).Where(c=>c.CategoriaId <= 10).AsNoTracking().ToList();
     }
 
     [HttpPost("Categorias")]
