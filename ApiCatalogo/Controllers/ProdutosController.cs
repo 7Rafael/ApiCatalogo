@@ -1,6 +1,7 @@
 ﻿using APICatalogo.Context;
 using APICatalogo.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace APICatalogo.Controllers;
@@ -25,9 +26,9 @@ public class ProdutosController : ControllerBase
         }
         return produtos;
     }
-
-    [HttpGet("{id:int}", Name = "ObterProduto")]
-    public ActionResult<Produto> Get(int id)
+    //restringir o numero minimo evita que a requisição funcione, caso não atende os requisitos
+    [HttpGet("{id:int:min(1)}", Name = "ObterProduto")]
+    public async Task<ActionResult<Produto>> Get([FromQuery]int id)
     {
         var produto = _context.Produtos.Take(10).AsNoTracking().FirstOrDefault(p => p.ProdutoId == id);
         if (produto is null)

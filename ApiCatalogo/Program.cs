@@ -1,3 +1,4 @@
+using ApiCatalogo.Services;
 using APICatalogo.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography.Xml;
@@ -19,6 +20,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
                     options.UseMySql(mySqlConnection,
                     ServerVersion.AutoDetect(mySqlConnection)));
 
+
+builder.Services.AddTransient<IMeuServico, MeuServico>();
+builder.Services.AddScoped<ApiLogginFilter>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,6 +30,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.ConfigureExceptionHandler();
 }
 
 app.UseHttpsRedirection();

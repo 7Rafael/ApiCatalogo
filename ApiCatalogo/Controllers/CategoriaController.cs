@@ -1,7 +1,9 @@
-﻿using APICatalogo.Context;
+﻿using ApiCatalogo.Services;
+using APICatalogo.Context;
 using APICatalogo.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.WebEncoders.Testing;
 
 namespace ApiCatalogo.Controllers;
 
@@ -17,20 +19,26 @@ public class CategoriaController : ControllerBase
         _context = context;
     }
 
-    [HttpGet("Categorias")]
-    public ActionResult<IEnumerable<Categoria>> GetAll()
+    [HttpGet]
+    [ServiceFilter(typeof(ApiLogginFilter))]
+    public async Task<ActionResult<IEnumerable<Categoria>>> Get()
     {
-        var categorias = _context.Categorias.Take(10).AsNoTracking().ToList();
-        if (categorias is null)
+        try
         {
-            return NotFound();
+            return await _context.Categorias.AsNoTracking().ToListAsync();
         }
-        return categorias;
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                "Ocorreu um problema ao tratar a solicitação.");
+        }
+
     }
     
     [HttpGet("{id:int}", Name = "ObterCategoria")]
     public ActionResult<Categoria> GetById(int id)
     {
+
         var categorias = _context.Categorias.AsNoTracking().FirstOrDefault(c => c.CategoriaId == id);
         if (categorias is null)
         {
@@ -39,11 +47,24 @@ public class CategoriaController : ControllerBase
         return categorias;
     }
 
+
+    [HttpGet("UsandoFromServices/{nome}")]
+    public ActionResult<string> GetSaudacaoFromServices([FromServices] IMeuServico meuServico, string nome)
+    {
+        return meuServico.Saudacao(nome);
+    }
+
+    [HttpGet("SemUsarFromServices/{nome}")]
+    public ActionResult<string> GetSaudacaoSemFromServices(IMeuServico meuServico, string nome)
+    {
+        return meuServico.Saudacao(nome);
+    }
+
     [HttpGet("Produtos")]
     public ActionResult<IEnumerable<Categoria>> GetAllProdutosECategorias()
     {
 
-        return _context.Categorias.Include(p => p.Produtos).Where(c=>c.CategoriaId <= 10).AsNoTracking().ToList();
+        return _context.Categorias.Include(p => p.Produtos).Where(c => c.CategoriaId <= 10).AsNoTracking().ToList();
     }
 
     [HttpPost("Categorias")]
